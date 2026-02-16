@@ -34,8 +34,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
-
-        String path = request.getRequestURI(); // ✅ VERY IMPORTANT CHANGE
+        String path = request.getServletPath(); 
 
         return path.contains("/api/auth")
             || path.contains("/api/voice")
