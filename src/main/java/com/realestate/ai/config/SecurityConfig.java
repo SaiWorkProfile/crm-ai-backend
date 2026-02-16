@@ -47,67 +47,60 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                // 🔥 React preflight fix
-            		  .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-            		  .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
-                .requestMatchers("/api/voice/**").permitAll()
-                // ---------- PUBLIC ----------
-                
-                .requestMatchers("/api/admin/projects/**")
-                .hasAnyRole("SUPER_ADMIN","ADMIN")
+            	    // ✅ PRE-FLIGHT
+            	    .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 
-                .requestMatchers(HttpMethod.POST, "/api/webhook/twilio/**").permitAll()
-                .requestMatchers("/api/ai/**").permitAll()
+            	    // ✅ PUBLIC AUTH (VERY IMPORTANT)
+            	    .requestMatchers("/api/auth/**").permitAll()
+            	    .requestMatchers("/api/voice/**").permitAll()
+            	    .requestMatchers("/api/ai/**").permitAll()
+            	    .requestMatchers("/api/webhook/twilio/**").permitAll()
 
-                // ---------- DASHBOARD ----------
-                .requestMatchers("/api/admin/dashboard")
-                .hasAnyRole(
-                        "SUPER_ADMIN",
-                        "ADMIN",
-                        "SALES_MANAGER",
-                        "MARKETING_MANAGER",
-                        "FINANCE",
-                        "SUPPORT",
-                        "VIEW_ONLY"
-                )
+            	    // 🔐 ROLE BASED BELOW
+            	    .requestMatchers("/api/admin/projects/**")
+            	    .hasAnyRole("SUPER_ADMIN","ADMIN")
 
-                // ---------- DEALS ----------
-                .requestMatchers(HttpMethod.GET, "/api/admin/deals/**")
-                .hasAnyRole("SUPER_ADMIN","ADMIN","SALES_MANAGER","FINANCE")
+            	    .requestMatchers("/api/admin/dashboard")
+            	    .hasAnyRole(
+            	        "SUPER_ADMIN",
+            	        "ADMIN",
+            	        "SALES_MANAGER",
+            	        "MARKETING_MANAGER",
+            	        "FINANCE",
+            	        "SUPPORT",
+            	        "VIEW_ONLY"
+            	    )
 
-                .requestMatchers(HttpMethod.POST, "/api/admin/deals/**")
-                .hasAnyRole("SUPER_ADMIN","ADMIN","SALES_MANAGER","FINANCE")
+            	    .requestMatchers(HttpMethod.GET, "/api/admin/deals/**")
+            	    .hasAnyRole("SUPER_ADMIN","ADMIN","SALES_MANAGER","FINANCE")
 
-                // ---------- SUPER ADMIN ----------
-                .requestMatchers("/api/superadmin/**")
-                .hasRole("SUPER_ADMIN")
+            	    .requestMatchers(HttpMethod.POST, "/api/admin/deals/**")
+            	    .hasAnyRole("SUPER_ADMIN","ADMIN","SALES_MANAGER","FINANCE")
 
-                // ---------- ADMIN ----------
-                .requestMatchers("/api/admin/**")
-                .hasAnyRole("SUPER_ADMIN","ADMIN")
+            	    .requestMatchers("/api/superadmin/**")
+            	    .hasRole("SUPER_ADMIN")
 
-                // ---------- SALES ----------
-                .requestMatchers("/api/sales/**")
-                .hasRole("SALES_MANAGER")
+            	    .requestMatchers("/api/admin/**")
+            	    .hasAnyRole("SUPER_ADMIN","ADMIN")
 
-                // ---------- MARKETING ----------
-                .requestMatchers("/api/marketing/**")
-                .hasRole("MARKETING_MANAGER")
+            	    .requestMatchers("/api/sales/**")
+            	    .hasRole("SALES_MANAGER")
 
-                // ---------- FINANCE ----------
-                .requestMatchers("/api/finance/**")
-                .hasRole("FINANCE")
+            	    .requestMatchers("/api/marketing/**")
+            	    .hasRole("MARKETING_MANAGER")
 
-                // ---------- SUPPORT ----------
-                .requestMatchers("/api/support/**")
-                .hasRole("SUPPORT")
+            	    .requestMatchers("/api/finance/**")
+            	    .hasRole("FINANCE")
 
-                // ---------- VIEW ----------
-                .requestMatchers("/api/view/**")
-                .hasRole("VIEW_ONLY")
+            	    .requestMatchers("/api/support/**")
+            	    .hasRole("SUPPORT")
 
-                .anyRequest().authenticated()
-            )
+            	    .requestMatchers("/api/view/**")
+            	    .hasRole("VIEW_ONLY")
+
+            	    .anyRequest().authenticated()
+            	)
+
 
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
