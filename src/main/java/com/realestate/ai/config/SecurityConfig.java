@@ -17,6 +17,7 @@ import org.springframework.web.cors.*;
 
 import java.util.List;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.web.cors.CorsUtils;
 
 
 @Configuration
@@ -47,10 +48,11 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
 
                 // 🔥 React preflight fix
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            		  .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+            		  .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                 .requestMatchers("/api/voice/**").permitAll()
                 // ---------- PUBLIC ----------
-                .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+                
                 .requestMatchers("/api/admin/projects/**")
                 .hasAnyRole("SUPER_ADMIN","ADMIN")
 
