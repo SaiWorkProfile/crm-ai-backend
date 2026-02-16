@@ -45,8 +45,27 @@ private TranslationService translator;
 public Map<String,String> ask(
 @RequestBody Map<String,String> req){
 
-String msg = req.get("message").toLowerCase();
-String sessionId = req.get("sessionId");
+	String sessionId = req.get("sessionId");
+
+	String msg = req.get("message");
+
+	if(msg == null || msg.isBlank()){
+	    return Map.of(
+	        "reply","Sorry, I didn't catch that. Please say again.",
+	        "stage","SEARCH",
+	        "close","no"
+	    );
+	}
+
+	msg = msg.toLowerCase();
+	if(sessionId == null || sessionId.isBlank()){
+	    return Map.of(
+	        "reply","Session expired. Please restart consultation.",
+	        "stage","DONE",
+	        "close","yes"
+	    );
+	}
+
 
 // 🔥 DETECT LANGUAGE
 String lang = translator.detectLanguage(msg);
