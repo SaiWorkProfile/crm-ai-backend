@@ -30,6 +30,10 @@ public class JwtFilter extends OncePerRequestFilter {
     // 🔥 SKIP JWT FOR PUBLIC APIs
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+    	
+    	if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
 
         String path = request.getServletPath();
 

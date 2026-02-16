@@ -112,7 +112,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ================= CORS =================
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
@@ -120,21 +119,17 @@ public class SecurityConfig {
 
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "https://manortha-website.vercel.app"
         ));
 
         config.setAllowedMethods(List.of(
                 "GET","POST","PUT","DELETE","OPTIONS"
         ));
-        config.setAllowedHeaders(List.of("*"));   // 🔥 VERY IMPORTANT
 
-        config.setExposedHeaders(List.of("Authorization")); // 🔥
+        config.setAllowedHeaders(List.of("*"));
 
-
-        config.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type"
-        ));
+        config.setExposedHeaders(List.of("Authorization"));
 
         config.setAllowCredentials(true);
 
@@ -145,6 +140,7 @@ public class SecurityConfig {
 
         return source;
     }
+
 
     // ================= PASSWORD =================
     @Bean
