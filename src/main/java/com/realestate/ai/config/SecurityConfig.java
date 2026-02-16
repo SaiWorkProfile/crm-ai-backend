@@ -117,29 +117,29 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "https://manortha-website.vercel.app"
+        config.setAllowedOriginPatterns(List.of(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "https://*.vercel.app"
         ));
 
         config.setAllowedMethods(List.of(
-                "GET","POST","PUT","DELETE","OPTIONS"
+            "GET","POST","PUT","DELETE","OPTIONS"
         ));
 
         config.setAllowedHeaders(List.of("*"));
-
         config.setExposedHeaders(List.of("Authorization"));
 
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+            new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**", config);
 
         return source;
     }
+
 
 
     // ================= PASSWORD =================
