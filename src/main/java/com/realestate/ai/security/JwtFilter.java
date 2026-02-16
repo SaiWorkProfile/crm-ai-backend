@@ -30,17 +30,17 @@ public class JwtFilter extends OncePerRequestFilter {
     // 🔥 SKIP JWT FOR PUBLIC APIs
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-    	
-    	if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
-        String path = request.getServletPath();
+        String path = request.getRequestURI(); // ✅ VERY IMPORTANT CHANGE
 
-        return path.startsWith("/api/webhook/twilio")
-            || path.startsWith("/api/ai")
-            || path.startsWith("/api/auth")
-            || path.startsWith("/api/voice");
+        return path.contains("/api/auth")
+            || path.contains("/api/voice")
+            || path.contains("/api/ai")
+            || path.contains("/api/webhook/twilio");
     }
 
     @Override
