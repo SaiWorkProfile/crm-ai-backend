@@ -27,21 +27,6 @@ public class JwtFilter extends OncePerRequestFilter {
         this.adminRepository = adminRepository;
     }
 
-    // 🔥 SKIP JWT FOR PUBLIC APIs
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            return true;
-        }
-        String path = request.getServletPath(); 
-
-        return path.contains("/api/auth")
-            || path.contains("/api/voice")
-            || path.contains("/api/ai")
-            || path.contains("/api/webhook/twilio");
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -58,8 +43,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 String email = jwtUtil.extractEmail(token);
                 String role  = jwtUtil.extractRole(token);
-                System.out.println("JWT EMAIL: " + email);
-                System.out.println("JWT ROLE: " + role);
+
                 if(email != null &&
                     SecurityContextHolder.getContext().getAuthentication() == null) {
 
