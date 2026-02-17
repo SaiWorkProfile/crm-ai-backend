@@ -173,10 +173,19 @@ public class SecurityConfig {
             "GET","POST","PUT","DELETE","OPTIONS"
         ));
 
-        config.setAllowedHeaders(List.of("*"));
+        // 🔥🔥🔥 VERY IMPORTANT FOR JWT
+        config.setAllowedHeaders(List.of(
+            "Authorization",
+            "Content-Type",
+            "Accept"
+        ));
+
         config.setExposedHeaders(List.of("Authorization"));
 
         config.setAllowCredentials(true);
+
+        // 🔥 cache preflight for 1 hour
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
             new UrlBasedCorsConfigurationSource();
