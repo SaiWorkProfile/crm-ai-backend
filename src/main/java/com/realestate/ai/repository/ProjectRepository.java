@@ -10,6 +10,7 @@ import com.realestate.ai.model.Project;
 public interface ProjectRepository
 extends JpaRepository<Project,Long>{
 
+// ================= VOICE AI PROGRESSIVE SEARCH =================
 @Query("""
 SELECT p FROM Project p
 WHERE p.published = true
@@ -39,10 +40,11 @@ OR p.gatedCommunity = :gated
 
 AND (
 :budget IS NULL
-OR p.priceStart <= :budget
+OR CAST(REPLACE(p.priceStart, ',', '') AS long) <= :budget
 )
 
-ORDER BY p.priceStart ASC
+ORDER BY
+CAST(REPLACE(p.priceStart, ',', '') AS long) ASC
 """)
 List<Project> progressiveMatch(
 
@@ -53,5 +55,22 @@ List<Project> progressiveMatch(
 @Param("budget") Long budget
 
 );
+
+
+// ================= GET ALL LOCATIONS =================
+@Query("""
+SELECT DISTINCT p.location FROM Project p
+WHERE p.published=true
+""")
+List<String> findAllLocations();
+
+
+// ================= GET ALL CITIES =================
+@Query("""
+SELECT DISTINCT p.city FROM Project p
+WHERE p.published=true
+""")
+List<String> findAllCities();
+
 
 }

@@ -1,6 +1,7 @@
 package com.realestate.ai.controller;
 
 import java.util.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,21 @@ public class VoiceAIController {
 @Autowired private LeadService leadService;
 @Autowired private RealEstateFilterService filter;
 @Autowired private TranslationService translator;
+@Autowired private LocationMatcherService matcher;
+
+
+// ================= CASUAL TALK FILTER =================
+private boolean isNonRealEstateQuery(String msg){
+
+return msg.contains("your name") ||
+msg.contains("who are you") ||
+msg.contains("weather") ||
+msg.contains("time") ||
+msg.contains("joke") ||
+msg.contains("news") ||
+msg.contains("sports") ||
+msg.contains("movie");
+}
 
 
 // ================== MAIN VOICE ==================
@@ -54,7 +70,32 @@ return Map.of(
 // 🔥 AUTO LANGUAGE DETECT
 String lang = translator.detectLanguage(msg);
 
+// allow only English + Indian languages
+if(!lang.equals("en") &&
+!lang.equals("hi") &&
+!lang.equals("te") &&
+!lang.equals("ta") &&
+!lang.equals("kn") &&
+!lang.equals("ml")){
+lang="en";
+}
+
 System.out.println("🎤 USER: "+msg+" | LANG:"+lang);
+
+
+// ================= NON REAL ESTATE =================
+if(isNonRealEstateQuery(msg)){
+
+return Map.of(
+"reply",
+translator.translate(
+"I assist only with real estate consultation professionally.",
+lang
+),
+"stage","SEARCH",
+"close","no"
+);
+}
 
 
 // ================= ASK NAME =================
@@ -154,6 +195,7 @@ for(String key : r.keySet()){
 Object val = r.get(key);
 if(val==null) continue;
 
+// 🔥 Budget convert
 if(key.equalsIgnoreCase("budget")){
 Long numeric =
 BudgetParser.parseBudgetToNumber(
@@ -164,6 +206,7 @@ oldReq.put("budget",numeric);
 continue;
 }
 
+// 🔥 BHK extract
 if(key.equalsIgnoreCase("bhk")){
 try{
 Integer bhk =
@@ -175,16 +218,21 @@ oldReq.put("bhk",bhk);
 continue;
 }
 
-if(!val.toString().isBlank())
-oldReq.put(key,val);
+// 🔥 FUZZY LOCATION MATCH
+if(key.equalsIgnoreCase("location") ||
+key.equalsIgnoreCase("city")){
+
+String closest =
+matcher.findClosestLocation(
+val.toString()
+);
+
+oldReq.put("city",closest);
+continue;
 }
 
-if(oldReq.containsKey("location") &&
-!oldReq.containsKey("city")){
-oldReq.put(
-"city",
-oldReq.get("location")
-);
+if(!val.toString().isBlank())
+oldReq.put(key,val);
 }
 
 session.set(sessionId,"requirement",oldReq);
@@ -213,57 +261,36 @@ projectService.progressiveSearch(oldReq);
 // ================= FOUND =================
 if(!list.isEmpty()){
 
-StringBuilder props =
-new StringBuilder(
+Project p = list.get(0);
+
+String reply =
 translator.translate(
-"We found these matching properties for you:",
-lang
+"Yes, we have",lang
 )
-).append("\n");
-
-int count=1;
-
-for(Project p:list){
-
-String name =
++" "+
+translator.translate(p.getName(),lang)
++" "+
+translator.translate("located in",lang)
++" "+
+translator.translate(p.getLocation(),lang)
++" "+
+translator.translate("offering",lang)
++" "+
+translator.translate(p.getBhk(),lang)
++" "+
+translator.translate("starting from rupees",lang)
++" "+
+p.getPriceStart()
++". "+
 translator.translate(
-p.getName(),lang
-);
-
-String location =
-translator.translate(
-p.getLocation(),lang
-);
-
-String price =
-translator.translate(
-"starting from ₹"+p.getPriceStart(),
+"May I know your name so our expert can assist you?",
 lang
-);
-
-props.append(count++)
-.append(". ")
-.append(name)
-.append(" ")
-.append(translator.translate("at",lang))
-.append(" ")
-.append(location)
-.append(" ")
-.append(price)
-.append(".\n");
-}
-
-props.append(
-translator.translate(
-"May I know your name?",
-lang
-)
 );
 
 session.set(sessionId,"askName","yes");
 
 return Map.of(
-"reply",props.toString(),
+"reply",reply,
 "stage","NAME",
 "close","no"
 );

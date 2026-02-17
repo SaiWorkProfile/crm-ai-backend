@@ -25,10 +25,23 @@ req.get("city")!=null ?
 req.get("city").toString() : null;
 
 
-// 🔥 BHK MUST BE STRING (DB HAS 2BHK)
-String bhk =
-req.get("bhk")!=null ?
-req.get("bhk").toString() : null;
+// 🔥 FIX BHK FORMAT
+String bhk=null;
+
+if(req.get("bhk")!=null){
+
+try{
+
+Integer b =
+Integer.parseInt(
+req.get("bhk").toString()
+.replaceAll("\\D","")
+);
+
+bhk=b+"BHK";
+
+}catch(Exception e){}
+}
 
 
 // PROPERTY TYPE
@@ -44,11 +57,17 @@ Boolean.valueOf(
 req.get("gatedCommunity").toString()) : null;
 
 
-// BUDGET (NUMERIC)
-Long budget =
+// BUDGET
+Long budget=null;
+
+try{
+
+budget =
 req.get("budget")!=null ?
 Long.parseLong(
 req.get("budget").toString()) : null;
+
+}catch(Exception e){}
 
 
 // CALL PROGRESSIVE MATCH
