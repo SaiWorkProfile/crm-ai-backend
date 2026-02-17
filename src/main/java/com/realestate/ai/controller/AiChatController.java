@@ -285,5 +285,13 @@ r.get("propertyType")!=null ||
 r.get("budget")!=null ||
 Boolean.TRUE.equals(r.get("gatedCommunity"));
 }
+@PostMapping("/reset")
+public void reset(@RequestBody Map<String,String> req){
+
+String sessionId=req.get("sessionId");
+
+if(sessionId!=null)
+session.clear(sessionId);
+}
 
 }
