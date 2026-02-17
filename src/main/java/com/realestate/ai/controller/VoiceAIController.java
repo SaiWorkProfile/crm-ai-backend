@@ -11,6 +11,7 @@ import com.realestate.ai.model.Lead;
 import com.realestate.ai.model.Project;
 import com.realestate.ai.service.*;
 import com.realestate.ai.util.BudgetParser;
+import com.realestate.ai.util.SpokenNumberParser;
 
 @RestController
 @RequestMapping("/api/voice")
@@ -35,7 +36,6 @@ private LeadService leadService;
 @Autowired
 private RealEstateFilterService filter;
 
-// 🔥 ADD THIS
 @Autowired
 private TranslationService translator;
 
@@ -45,30 +45,31 @@ private TranslationService translator;
 public Map<String,String> ask(
 @RequestBody Map<String,String> req){
 
-	String sessionId = req.get("sessionId");
+String sessionId = req.get("sessionId");
+String msg = req.get("message");
 
-	String msg = req.get("message");
+// 🔥 LANGUAGE FROM FRONTEND
+String lang = req.getOrDefault("language","en");
 
-	if(msg == null || msg.isBlank()){
-	    return Map.of(
-	        "reply","Sorry, I didn't catch that. Please say again.",
-	        "stage","SEARCH",
-	        "close","no"
-	    );
-	}
+if(msg == null || msg.isBlank()){
+    return Map.of(
+        "reply", translator.translate(
+            "Sorry, I didn't catch that. Please say again.", lang),
+        "stage","SEARCH",
+        "close","no"
+    );
+}
 
-	msg = msg.toLowerCase();
-	if(sessionId == null || sessionId.isBlank()){
-	    return Map.of(
-	        "reply","Session expired. Please restart consultation.",
-	        "stage","DONE",
-	        "close","yes"
-	    );
-	}
+msg = msg.toLowerCase();
 
-
-// 🔥 DETECT LANGUAGE
-String lang = translator.detectLanguage(msg);
+if(sessionId == null || sessionId.isBlank()){
+    return Map.of(
+        "reply", translator.translate(
+            "Session expired. Please restart consultation.", lang),
+        "stage","DONE",
+        "close","yes"
+    );
+}
 
 System.out.println("🎤 USER: "+msg);
 
@@ -103,19 +104,8 @@ return Map.of(
 
 if(session.has(sessionId,"askPhone")){
 
-String raw = msg
-.replaceAll("zero","0")
-.replaceAll("one","1")
-.replaceAll("two","2")
-.replaceAll("three","3")
-.replaceAll("four","4")
-.replaceAll("five","5")
-.replaceAll("six","6")
-.replaceAll("seven","7")
-.replaceAll("eight","8")
-.replaceAll("nine","9");
-
-String phone = raw.replaceAll("\\D","");
+msg = SpokenNumberParser.parse(msg);
+String phone = msg.replaceAll("\\D","");
 
 if(phone.length()!=10 ||
 !phone.matches("^[6-9]\\d{9}$")){
@@ -271,8 +261,7 @@ return Map.of(
 // ============================================
 
 List<Project> list =
-projectService
-.progressiveSearch(oldReq);
+projectService.progressiveSearch(oldReq);
 
 
 // ============================================
@@ -281,28 +270,38 @@ projectService
 
 if(!list.isEmpty()){
 
-StringBuilder props =
-new StringBuilder(
-"We found these matching properties:\n"
+StringBuilder props = new StringBuilder();
+
+String intro =
+translator.translate(
+"We found these matching properties for you:",
+lang
 );
+
+props.append(intro).append("\n");
 
 int count = 1;
 
 for(Project p : list){
 
+String line =
+p.getName()+
+" at "+
+p.getLocation()+
+" starting from ₹"+
+p.getPriceStart();
+
+String translatedLine =
+translator.translate(line,lang);
+
 props.append(count++)
 .append(". ")
-.append(p.getName())
-.append(" at ")
-.append(p.getLocation())
-.append(" starting from ₹")
-.append(p.getPriceStart())
-.append(". ");
+.append(translatedLine)
+.append(".\n");
 }
 
-String reply =
+String askName =
 translator.translate(
-props.toString()+
 "May I know your name?",
 lang
 );
@@ -310,7 +309,7 @@ lang
 session.set(sessionId,"askName","yes");
 
 return Map.of(
-"reply",reply,
+"reply",props.toString()+"\n"+askName,
 "stage","NAME",
 "close","no"
 );
