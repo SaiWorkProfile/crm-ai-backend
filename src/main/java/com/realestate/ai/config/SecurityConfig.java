@@ -47,19 +47,16 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-            	    // ✅ PRE-FLIGHT
+            	    // ================= PREFLIGHT =================
             	    .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 
-            	    // ✅ PUBLIC AUTH (VERY IMPORTANT)
+            	    // ================= PUBLIC =================
             	    .requestMatchers("/api/auth/**").permitAll()
             	    .requestMatchers("/api/voice/**").permitAll()
             	    .requestMatchers("/api/ai/**").permitAll()
             	    .requestMatchers("/api/webhook/twilio/**").permitAll()
 
-            	    // 🔐 ROLE BASED BELOW
-            	    .requestMatchers("/api/admin/projects/**")
-            	    .hasAnyRole("SUPER_ADMIN","ADMIN")
-
+            	    // ================= DASHBOARD =================
             	    .requestMatchers("/api/admin/dashboard")
             	    .hasAnyRole(
             	        "SUPER_ADMIN",
@@ -71,17 +68,67 @@ public class SecurityConfig {
             	        "VIEW_ONLY"
             	    )
 
-            	    .requestMatchers(HttpMethod.GET, "/api/admin/deals/**")
-            	    .hasAnyRole("SUPER_ADMIN","ADMIN","SALES_MANAGER","FINANCE")
+            	    // ================= LEADS =================
+            	    .requestMatchers(HttpMethod.GET,"/api/admin/leads/**")
+            	    .hasAnyRole(
+            	        "SUPER_ADMIN",
+            	        "ADMIN",
+            	        "SALES_MANAGER",
+            	        "MARKETING_MANAGER",
+            	        "FINANCE",
+            	        "SUPPORT",
+            	        "VIEW_ONLY"
+            	    )
 
-            	    .requestMatchers(HttpMethod.POST, "/api/admin/deals/**")
-            	    .hasAnyRole("SUPER_ADMIN","ADMIN","SALES_MANAGER","FINANCE")
+            	    .requestMatchers(HttpMethod.POST,"/api/admin/leads/**")
+            	    .hasAnyRole(
+            	        "SUPER_ADMIN",
+            	        "ADMIN",
+            	        "SALES_MANAGER",
+            	        "MARKETING_MANAGER"
+            	    )
 
+            	    .requestMatchers(HttpMethod.PUT,"/api/admin/leads/**")
+            	    .hasAnyRole(
+            	        "SUPER_ADMIN",
+            	        "ADMIN",
+            	        "SALES_MANAGER",
+            	        "SUPPORT"
+            	    )
+
+            	    // ================= DEALS =================
+            	    .requestMatchers(HttpMethod.GET,"/api/admin/deals/**")
+            	    .hasAnyRole(
+            	        "SUPER_ADMIN",
+            	        "ADMIN",
+            	        "SALES_MANAGER",
+            	        "FINANCE"
+            	    )
+
+            	    .requestMatchers(HttpMethod.POST,"/api/admin/deals/**")
+            	    .hasAnyRole(
+            	        "SUPER_ADMIN",
+            	        "ADMIN",
+            	        "SALES_MANAGER"
+            	    )
+
+            	    .requestMatchers(HttpMethod.PUT,"/api/admin/deals/**")
+            	    .hasAnyRole(
+            	        "SUPER_ADMIN",
+            	        "ADMIN",
+            	        "FINANCE"
+            	    )
+
+            	    // ================= PROJECTS =================
+            	    .requestMatchers("/api/admin/projects/**")
+            	    .hasAnyRole(
+            	        "SUPER_ADMIN",
+            	        "ADMIN"
+            	    )
+
+            	    // ================= ROLE MODULES =================
             	    .requestMatchers("/api/superadmin/**")
             	    .hasRole("SUPER_ADMIN")
-
-            	    .requestMatchers("/api/admin/**")
-            	    .hasAnyRole("SUPER_ADMIN","ADMIN")
 
             	    .requestMatchers("/api/sales/**")
             	    .hasRole("SALES_MANAGER")
@@ -97,6 +144,10 @@ public class SecurityConfig {
 
             	    .requestMatchers("/api/view/**")
             	    .hasRole("VIEW_ONLY")
+
+            	    // 🔥 KEEP THIS LAST
+            	    .requestMatchers("/api/admin/**")
+            	    .hasAnyRole("SUPER_ADMIN","ADMIN")
 
             	    .anyRequest().authenticated()
             	)
