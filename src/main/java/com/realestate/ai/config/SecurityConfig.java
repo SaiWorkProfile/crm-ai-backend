@@ -118,6 +118,8 @@ public class SecurityConfig {
             	        "ADMIN",
             	        "FINANCE"
             	    )
+            	    .requestMatchers("/api/admin/login-logs")
+            	    .hasAnyRole("SUPER_ADMIN","ADMIN")
 
             	    // ================= PROJECTS =================
             	    .requestMatchers("/api/admin/projects/**")
