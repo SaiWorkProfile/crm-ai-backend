@@ -19,26 +19,53 @@ private static final String GROQ_URL =
 "https://api.groq.com/openai/v1/chat/completions";
 
 
-// 🔥 MAIN TRANSLATE METHOD
+// ================= LANG NAME =================
+private String langName(String lang){
+
+return switch(lang){
+
+case "te" -> "Telugu";
+case "hi" -> "Hindi";
+case "ta" -> "Tamil";
+case "kn" -> "Kannada";
+case "ml" -> "Malayalam";
+
+default -> "English";
+};
+}
+
+
+// ================= TRANSLATE =================
 public String translate(String text,String lang){
 
-// NO NEED TO TRANSLATE ENGLISH
-if(lang==null || lang.equalsIgnoreCase("ENGLISH"))
+String language = langName(lang);
+
+// ENGLISH NO NEED
+if(language.equals("English"))
 return text;
 
 try{
 
-// ✅ VALID JAVA TEXT BLOCK
 String prompt = """
+You are a professional Indian Real Estate Voice Assistant.
+
 Translate the following real estate sentence into %s.
+
+Allowed output languages ONLY:
+English, Hindi, Telugu, Tamil, Kannada, Malayalam.
+
+Never translate into Spanish, French or any other language.
+
+Use polite professional property consultation tone.
+
 Return ONLY translated sentence.
 
 Sentence:
 %s
-""".formatted(lang,text);
+""".formatted(language,text);
 
 
-// 🔥 GROQ BODY
+// ================= BODY =================
 Map<String,Object> body =
 Map.of(
 "model","llama-3.3-70b-versatile",
@@ -49,13 +76,13 @@ Map.of("role","user","content",prompt)
 );
 
 
-// 🔥 HEADERS
+// ================= HEADERS =================
 HttpHeaders headers=new HttpHeaders();
 headers.setContentType(MediaType.APPLICATION_JSON);
 headers.setBearerAuth(apiKey);
 
 
-// 🔥 CALL
+// ================= CALL =================
 HttpEntity<Map<String,Object>> entity =
 new HttpEntity<>(body,headers);
 
@@ -67,13 +94,11 @@ Map.class
 );
 
 
-// 🔥 RESPONSE
+// ================= RESPONSE =================
 Map res=response.getBody();
 
 List choices=(List)res.get("choices");
-
 Map choice=(Map)choices.get(0);
-
 Map msg=(Map)choice.get("message");
 
 return msg.get("content").toString();
@@ -81,35 +106,66 @@ return msg.get("content").toString();
 }catch(Exception e){
 
 System.out.println("TRANSLATE ERROR: "+e.getMessage());
-
 return text;
 }
 }
+
+
+// ================= LANGUAGE DETECT =================
 public String detectLanguage(String text){
 
 text = text.toLowerCase();
 
-// HINDI CHECK
-if(text.matches(".*[\\u0900-\\u097F]+.*") ||
-text.contains("hai") ||
-text.contains("chahiye") ||
-text.contains("mein") ||
-text.contains("kya") ||
-text.contains("mujhe")){
-return "hi";
-}
 
-// TELUGU CHECK
-if(text.matches(".*[\\u0C00-\\u0C7F]+.*")){
+// ===== TELUGU SCRIPT =====
+if(text.matches(".*[\\u0C00-\\u0C7F]+.*"))
 return "te";
-}
 
-// TAMIL CHECK
-if(text.matches(".*[\\u0B80-\\u0BFF]+.*")){
+
+// ===== HINDI SCRIPT =====
+if(text.matches(".*[\\u0900-\\u097F]+.*"))
+return "hi";
+
+
+// ===== TAMIL SCRIPT =====
+if(text.matches(".*[\\u0B80-\\u0BFF]+.*"))
 return "ta";
-}
 
-// DEFAULT ENGLISH
+
+// ===== KANNADA SCRIPT =====
+if(text.matches(".*[\\u0C80-\\u0CFF]+.*"))
+return "kn";
+
+
+// ===== MALAYALAM SCRIPT =====
+if(text.matches(".*[\\u0D00-\\u0D7F]+.*"))
+return "ml";
+
+
+// ===== TELUGU HINGLISH =====
+if(text.contains("kavali")
+|| text.contains("lo")
+|| text.contains("undi")
+|| text.contains("ivvandi")
+|| text.contains("unnaya"))
+return "te";
+
+
+// ===== HINDI HINGLISH =====
+if(text.contains("mujhe")
+|| text.contains("chahiye")
+|| text.contains("ghar")
+|| text.contains("kya")
+|| text.contains("hai"))
+return "hi";
+
+
+// ===== TAMIL HINGLISH =====
+if(text.contains("venum")
+|| text.contains("iruku"))
+return "ta";
+
+
 return "en";
 }
 

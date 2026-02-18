@@ -28,29 +28,42 @@ public Map<String,Object> extract(String msg){
 try{
 
 String prompt = """
-You are a real estate NLP engine.
+You are an Indian Real Estate requirement extraction engine.
 
-Extract requirements from this sentence.
+Extract ONLY the following:
+
+bhk
+propertyType
+budget
+gatedCommunity
+
+DO NOT extract:
+city
+location
+area
+place
+
+City and location will be handled separately from database.
 
 Return STRICT JSON ONLY.
 
 {
  "bhk": null,
  "propertyType": null,
- "city": null,
- "location": null,
  "budget": null,
- "status": null,
  "gatedCommunity": null
 }
 
 Examples:
 
 "I want 2bhk in Hyderabad"
-→ {"bhk":"2BHK","city":"Hyderabad"}
+→ {"bhk":"2BHK"}
 
-"Need villa in Bangalore gated community"
-→ {"propertyType":"Villa","city":"Bangalore","gatedCommunity":true}
+"Need villa gated community"
+→ {"propertyType":"Villa","gatedCommunity":true}
+
+"Flat under 50 lakhs"
+→ {"budget":"50 lakh"}
 
 Sentence:
 """ + msg;
@@ -58,13 +71,13 @@ Sentence:
 
 Map<String,Object> body =
 Map.of(
- "model","llama-3.3-70b-versatile",   // 🔥 WORKING MODEL
+ "model","llama-3.3-70b-versatile",
  "temperature",0,
  "messages",List.of(
   Map.of("role","user","content",prompt)
  ),
  "response_format",
- Map.of("type","json_object")          // 🔥 VERY IMPORTANT
+ Map.of("type","json_object")
 );
 
 
