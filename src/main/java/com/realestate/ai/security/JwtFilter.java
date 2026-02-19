@@ -75,7 +75,7 @@ public class JwtFilter extends OncePerRequestFilter {
                                         null,
                                         List.of(
                                                 // ✅ ADD BACK SINGLE ROLE_
-                                                new SimpleGrantedAuthority("ROLE_" + role)
+                                                new SimpleGrantedAuthority(role)
                                         )
                                 );
 
