@@ -36,8 +36,6 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 🔥🔥🔥 VERY IMPORTANT FOR VERCEL
-        // Allow CORS preflight request
         if(request.getMethod().equalsIgnoreCase("OPTIONS")){
             filterChain.doFilter(request,response);
             return;
@@ -54,6 +52,11 @@ public class JwtFilter extends OncePerRequestFilter {
                 String email = jwtUtil.extractEmail(token);
                 String role  = jwtUtil.extractRole(token);
 
+                // 🔥🔥🔥 REMOVE ROLE_ PREFIX FROM JWT
+                if(role.startsWith("ROLE_")){
+                    role = role.substring(5);
+                }
+
                 if(email != null &&
                     SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -68,7 +71,8 @@ public class JwtFilter extends OncePerRequestFilter {
                                 admin,
                                 null,
                                 List.of(
-                                    new SimpleGrantedAuthority(role)
+                                    // 🔥 ADD BACK ONLY ONE ROLE_
+                                    new SimpleGrantedAuthority("ROLE_" + role)
                                 )
                             );
 
@@ -82,4 +86,5 @@ public class JwtFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request,response);
     }
+
 }
