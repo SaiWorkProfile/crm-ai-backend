@@ -50,14 +50,19 @@ throw new RuntimeException(
 Partner saved=repo.save(p);
 
 // CREATE LOGIN ENTRY
-ClientUser user=new ClientUser();
+ClientUser user = new ClientUser();
+
 user.setName(saved.getName());
 user.setEmail(saved.getEmail());
 user.setPhone(saved.getPhone());
 user.setRole(ClientRole.PARTNER);
 user.setActive(true);
 
+// 🔥 MUST REQUIRED
+user.setPassword("TEMP_PASSWORD");
+
 clientRepo.save(user);
+
 
 // CREATE ACTIVATION TOKEN
 String token=UUID.randomUUID().toString();
@@ -72,13 +77,22 @@ LocalDateTime.now().plusDays(1)
 );
 
 tokenRepo.save(t);
+//SEND EMAIL LINK
+try {
 
-// SEND EMAIL LINK
-emailService.sendActivationLink(
-saved.getEmail(),
-"https://crm.app/set-password?token="+token
-);
+ emailService.sendActivationLink(
+     saved.getEmail(),
+     "https://crm.app/set-password?token=" + token
+ );
 
+} catch (Exception e) {
+
+ System.out.println(
+     "EMAIL FAILED BUT PARTNER CREATED: "
+     + e.getMessage()
+ );
+
+}
 
 return saved;
 }
