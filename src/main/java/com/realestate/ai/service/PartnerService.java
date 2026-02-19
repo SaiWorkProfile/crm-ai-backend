@@ -117,4 +117,13 @@ Partner p=repo.findById(id)
 p.setDeleted(true);
 repo.save(p);
 }
+public Partner verifyKyc(Long id){
+
+Partner p=repo.findById(id)
+.orElseThrow();
+
+p.setKycVerified(true);
+return repo.save(p);
+}
+
 }

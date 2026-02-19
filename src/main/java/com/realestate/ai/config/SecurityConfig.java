@@ -52,6 +52,9 @@ public class SecurityConfig {
 
             	    // ================= PUBLIC =================
             	    .requestMatchers("/api/auth/**").permitAll()
+            	    .requestMatchers("/api/client/login").permitAll()
+            	    .requestMatchers("/api/auth/client/set-password").permitAll()
+
             	    .requestMatchers("/api/voice/**").permitAll()
             	    .requestMatchers("/api/ai/**").permitAll()
             	    .requestMatchers("/api/webhook/twilio/**").permitAll()
