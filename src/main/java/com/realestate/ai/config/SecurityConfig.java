@@ -181,22 +181,14 @@ public class SecurityConfig {
             "https://*.vercel.app"
         ));
 
-        config.setAllowedMethods(List.of(
-            "GET","POST","PUT","DELETE","OPTIONS"
-        ));
+        config.setAllowedMethods(List.of("*"));
 
-        // 🔥🔥🔥 VERY IMPORTANT FOR JWT
-        config.setAllowedHeaders(List.of(
-            "Authorization",
-            "Content-Type",
-            "Accept"
-        ));
+        config.setAllowedHeaders(List.of("*"));
 
         config.setExposedHeaders(List.of("Authorization"));
 
         config.setAllowCredentials(true);
 
-        // 🔥 cache preflight for 1 hour
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
@@ -206,6 +198,7 @@ public class SecurityConfig {
 
         return source;
     }
+
 
 
 
