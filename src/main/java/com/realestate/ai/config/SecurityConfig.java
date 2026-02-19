@@ -130,19 +130,43 @@ public class SecurityConfig {
             	        "SUPER_ADMIN",
             	        "ADMIN"
             	    )
-            	 // ================= PARTNERS =================
-            	    .requestMatchers("/api/admin/partners/**")
-            	    .hasAnyRole(
-            	        "SUPER_ADMIN",
-            	        "ADMIN"
-            	    )
             	 // ================= CLIENTS =================
-            	    .requestMatchers("/api/admin/clients/**")
-            	    .hasAnyRole(
-            	        "SUPER_ADMIN",
-            	        "ADMIN"
-            	    )
 
+            	 // CREATE CLIENT
+            	 .requestMatchers(
+            	 HttpMethod.POST,
+            	 "/api/admin/clients"
+            	 ).hasAnyRole("SUPER_ADMIN","ADMIN")
+
+            	 // VIEW CLIENTS
+            	 .requestMatchers(
+            	 HttpMethod.GET,
+            	 "/api/admin/clients"
+            	 ).hasAnyRole("SUPER_ADMIN","ADMIN")
+
+            	 // CLIENT DETAILS
+            	 .requestMatchers(
+            	 "/api/admin/clients/**"
+            	 ).hasAnyRole("SUPER_ADMIN","ADMIN")
+
+            	// ================= PARTNERS =================
+
+            	// CREATE PARTNER
+            	.requestMatchers(
+            	HttpMethod.POST,
+            	"/api/admin/partners"
+            	).hasAnyRole("SUPER_ADMIN","ADMIN")
+
+            	// VIEW PARTNERS
+            	.requestMatchers(
+            	HttpMethod.GET,
+            	"/api/admin/partners"
+            	).hasAnyRole("SUPER_ADMIN","ADMIN")
+
+            	// UPDATE / VERIFY / APPROVE / DELETE
+            	.requestMatchers(
+            	"/api/admin/partners/**"
+            	).hasAnyRole("SUPER_ADMIN","ADMIN")
 
 
             	    // ================= ROLE MODULES =================
