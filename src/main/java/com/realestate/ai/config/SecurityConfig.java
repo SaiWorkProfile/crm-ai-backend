@@ -234,13 +234,6 @@ public class SecurityConfig {
         return source;
     }
 
-
- // 🔥🔥🔥 ADD THIS HERE ONLY
-    @Bean
-    public GrantedAuthorityDefaults grantedAuthorityDefaults() {
-        return new GrantedAuthorityDefaults("");
-    }
-
     // ================= PASSWORD =================
     @Bean
     public PasswordEncoder passwordEncoder() {
