@@ -87,4 +87,16 @@ public class JwtFilter extends OncePerRequestFilter {
         filterChain.doFilter(request,response);
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+
+        String path = request.getServletPath();
+
+        // ❌ DO NOT FILTER LOGIN OR PUBLIC APIs
+        return path.startsWith("/api/auth")
+            || path.startsWith("/api/voice")
+            || path.startsWith("/api/ai")
+            || path.startsWith("/api/webhook");
+    }
+
 }
