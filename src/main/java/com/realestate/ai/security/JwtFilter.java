@@ -50,7 +50,8 @@ public class JwtFilter extends OncePerRequestFilter {
             if(jwtUtil.validateToken(token)) {
 
                 String email = jwtUtil.extractEmail(token);
-                String role  = jwtUtil.extractRole(token);
+                String role = jwtUtil.extractRole(token).replace("ROLE_", "");
+
 
                 // 🔥🔥🔥 REMOVE ROLE_ PREFIX FROM JWT
                 if(role.startsWith("ROLE_")){
@@ -72,7 +73,8 @@ public class JwtFilter extends OncePerRequestFilter {
                                 null,
                                 List.of(
                                     // 🔥 ADD BACK ONLY ONE ROLE_
-                                    new SimpleGrantedAuthority("ROLE_" + role)
+                                		new SimpleGrantedAuthority("ROLE_" + role)
+
                                 )
                             );
 
