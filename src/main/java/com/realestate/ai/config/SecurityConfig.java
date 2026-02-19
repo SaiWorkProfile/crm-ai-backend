@@ -34,7 +34,11 @@ public class SecurityConfig {
 
         http
             // 🔥 VERY IMPORTANT FOR JWT (TWILIO BROKE THIS EARLIER)
-            .csrf(csrf -> csrf.disable())
+        .csrf(csrf -> csrf
+        	    .ignoringRequestMatchers("/api/**")
+        	    .disable()
+        	)
+
 
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
