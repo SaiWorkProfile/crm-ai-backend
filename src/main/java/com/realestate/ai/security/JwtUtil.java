@@ -53,4 +53,8 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
+    public String getSecretDebug(){
+        return secret;
+    }
+
 }

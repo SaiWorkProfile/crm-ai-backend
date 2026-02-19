@@ -46,6 +46,9 @@ public class JwtFilter extends OncePerRequestFilter {
         if(header != null && header.startsWith("Bearer ")) {
 
             String token = header.substring(7);
+            System.out.println("JWT TOKEN = " + token);
+            System.out.println("JWT SECRET = " + jwtUtil.getSecretDebug());
+
 
             if(jwtUtil.validateToken(token)) {
 
