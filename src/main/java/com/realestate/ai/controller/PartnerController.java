@@ -5,13 +5,11 @@ import com.realestate.ai.repository.PartnerRepository;
 import com.realestate.ai.service.PartnerService;
 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/partners")
-@PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_ADMIN')")
 public class PartnerController {
 
     private final PartnerService service;
