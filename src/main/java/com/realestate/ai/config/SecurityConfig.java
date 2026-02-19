@@ -136,6 +136,13 @@ public class SecurityConfig {
             	        "SUPER_ADMIN",
             	        "ADMIN"
             	    )
+            	 // ================= CLIENTS =================
+            	    .requestMatchers("/api/admin/clients/**")
+            	    .hasAnyRole(
+            	        "SUPER_ADMIN",
+            	        "ADMIN"
+            	    )
+
 
 
             	    // ================= ROLE MODULES =================
