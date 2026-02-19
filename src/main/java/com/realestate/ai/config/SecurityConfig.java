@@ -7,18 +7,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.*;
-
 import java.util.List;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.cors.CorsUtils;
-
 
 @Configuration
 @EnableMethodSecurity
@@ -29,178 +26,130 @@ public class SecurityConfig {
     public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
     }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            // 🔥 VERY IMPORTANT FOR JWT (TWILIO BROKE THIS EARLIER)
-        .csrf(csrf -> csrf
-        	    .ignoringRequestMatchers("/api/**")
-        	    .disable()
-        	)
+        .csrf(csrf -> csrf.disable())
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .httpBasic(b -> b.disable())
+        .formLogin(f -> f.disable())
+        .sessionManagement(sm ->
+            sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
 
+        .authorizeHttpRequests(auth -> auth
 
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        // PREFLIGHT
+        .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 
-            .httpBasic(b -> b.disable())
-            .formLogin(f -> f.disable())
+        // PUBLIC
+        .requestMatchers("/api/auth/**").permitAll()
+        .requestMatchers("/api/client/login").permitAll()
+        .requestMatchers("/api/auth/client/set-password").permitAll()
+        .requestMatchers("/api/voice/**").permitAll()
+        .requestMatchers("/api/ai/**").permitAll()
+        .requestMatchers("/api/webhook/twilio/**").permitAll()
 
-            .sessionManagement(sm ->
-                sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
+        // DASHBOARD
+        .requestMatchers("/api/admin/dashboard")
+        .hasAnyAuthority(
+        "ROLE_SUPER_ADMIN",
+        "ROLE_ADMIN",
+        "ROLE_SALES_MANAGER",
+        "ROLE_MARKETING_MANAGER",
+        "ROLE_FINANCE",
+        "ROLE_SUPPORT",
+        "ROLE_VIEW_ONLY"
+        )
 
-            .authorizeHttpRequests(auth -> auth
+        // LEADS
+        .requestMatchers(HttpMethod.GET,"/api/admin/leads/**")
+        .hasAnyAuthority(
+        "ROLE_SUPER_ADMIN",
+        "ROLE_ADMIN",
+        "ROLE_SALES_MANAGER",
+        "ROLE_MARKETING_MANAGER",
+        "ROLE_FINANCE",
+        "ROLE_SUPPORT",
+        "ROLE_VIEW_ONLY"
+        )
 
-            	    // ================= PREFLIGHT =================
-            	    .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+        .requestMatchers(HttpMethod.POST,"/api/admin/leads/**")
+        .hasAnyAuthority(
+        "ROLE_SUPER_ADMIN",
+        "ROLE_ADMIN",
+        "ROLE_SALES_MANAGER",
+        "ROLE_MARKETING_MANAGER"
+        )
 
-            	    // ================= PUBLIC =================
-            	    .requestMatchers("/api/auth/**").permitAll()
-            	    .requestMatchers("/api/client/login").permitAll()
-            	    .requestMatchers("/api/auth/client/set-password").permitAll()
+        .requestMatchers(HttpMethod.PUT,"/api/admin/leads/**")
+        .hasAnyAuthority(
+        "ROLE_SUPER_ADMIN",
+        "ROLE_ADMIN",
+        "ROLE_SALES_MANAGER",
+        "ROLE_SUPPORT"
+        )
 
-            	    .requestMatchers("/api/voice/**").permitAll()
-            	    .requestMatchers("/api/ai/**").permitAll()
-            	    .requestMatchers("/api/webhook/twilio/**").permitAll()
+        // DEALS
+        .requestMatchers(HttpMethod.GET,"/api/admin/deals/**")
+        .hasAnyAuthority(
+        "ROLE_SUPER_ADMIN",
+        "ROLE_ADMIN",
+        "ROLE_SALES_MANAGER",
+        "ROLE_FINANCE"
+        )
 
-            	    // ================= DASHBOARD =================
-            	    .requestMatchers("/api/admin/dashboard")
-            	    .hasAnyRole(
-            	        "SUPER_ADMIN",
-            	        "ADMIN",
-            	        "SALES_MANAGER",
-            	        "MARKETING_MANAGER",
-            	        "FINANCE",
-            	        "SUPPORT",
-            	        "VIEW_ONLY"
-            	    )
+        .requestMatchers(HttpMethod.POST,"/api/admin/deals/**")
+        .hasAnyAuthority(
+        "ROLE_SUPER_ADMIN",
+        "ROLE_ADMIN",
+        "ROLE_SALES_MANAGER"
+        )
 
-            	    // ================= LEADS =================
-            	    .requestMatchers(HttpMethod.GET,"/api/admin/leads/**")
-            	    .hasAnyRole(
-            	        "SUPER_ADMIN",
-            	        "ADMIN",
-            	        "SALES_MANAGER",
-            	        "MARKETING_MANAGER",
-            	        "FINANCE",
-            	        "SUPPORT",
-            	        "VIEW_ONLY"
-            	    )
+        .requestMatchers(HttpMethod.PUT,"/api/admin/deals/**")
+        .hasAnyAuthority(
+        "ROLE_SUPER_ADMIN",
+        "ROLE_ADMIN",
+        "ROLE_FINANCE"
+        )
 
-            	    .requestMatchers(HttpMethod.POST,"/api/admin/leads/**")
-            	    .hasAnyRole(
-            	        "SUPER_ADMIN",
-            	        "ADMIN",
-            	        "SALES_MANAGER",
-            	        "MARKETING_MANAGER"
-            	    )
+        .requestMatchers("/api/admin/login-logs")
+        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
-            	    .requestMatchers(HttpMethod.PUT,"/api/admin/leads/**")
-            	    .hasAnyRole(
-            	        "SUPER_ADMIN",
-            	        "ADMIN",
-            	        "SALES_MANAGER",
-            	        "SUPPORT"
-            	    )
+        // PROJECTS
+        .requestMatchers("/api/admin/projects/**")
+        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
-            	    // ================= DEALS =================
-            	    .requestMatchers(HttpMethod.GET,"/api/admin/deals/**")
-            	    .hasAnyRole(
-            	        "SUPER_ADMIN",
-            	        "ADMIN",
-            	        "SALES_MANAGER",
-            	        "FINANCE"
-            	    )
+        // CLIENTS
+        .requestMatchers(HttpMethod.POST,"/api/admin/clients")
+        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
-            	    .requestMatchers(HttpMethod.POST,"/api/admin/deals/**")
-            	    .hasAnyRole(
-            	        "SUPER_ADMIN",
-            	        "ADMIN",
-            	        "SALES_MANAGER"
-            	    )
+        .requestMatchers(HttpMethod.GET,"/api/admin/clients")
+        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
-            	    .requestMatchers(HttpMethod.PUT,"/api/admin/deals/**")
-            	    .hasAnyRole(
-            	        "SUPER_ADMIN",
-            	        "ADMIN",
-            	        "FINANCE"
-            	    )
-            	    .requestMatchers("/api/admin/login-logs")
-            	    .hasAnyRole("SUPER_ADMIN","ADMIN")
+        .requestMatchers("/api/admin/clients/**")
+        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
-            	    // ================= PROJECTS =================
-            	    .requestMatchers("/api/admin/projects/**")
-            	    .hasAnyRole(
-            	        "SUPER_ADMIN",
-            	        "ADMIN"
-            	    )
-            	 // ================= CLIENTS =================
+        // PARTNERS
+        .requestMatchers(HttpMethod.POST,"/api/admin/partners")
+        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
-            	 // CREATE CLIENT
-            	 .requestMatchers(
-            	 HttpMethod.POST,
-            	 "/api/admin/clients"
-            	 ).hasAnyRole("SUPER_ADMIN","ADMIN")
+        .requestMatchers(HttpMethod.GET,"/api/admin/partners")
+        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
-            	 // VIEW CLIENTS
-            	 .requestMatchers(
-            	 HttpMethod.GET,
-            	 "/api/admin/clients"
-            	 ).hasAnyRole("SUPER_ADMIN","ADMIN")
+        .requestMatchers("/api/admin/partners/**")
+        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
-            	 // CLIENT DETAILS
-            	 .requestMatchers(
-            	 "/api/admin/clients/**"
-            	 ).hasAnyRole("SUPER_ADMIN","ADMIN")
+        // MASTER ADMIN
+        .requestMatchers("/api/admin/**")
+        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
-            	// ================= PARTNERS =================
+        .anyRequest().authenticated()
+        )
 
-            	// CREATE PARTNER
-            	.requestMatchers(
-            	HttpMethod.POST,
-            	"/api/admin/partners"
-            	).hasAnyRole("SUPER_ADMIN","ADMIN")
-
-            	// VIEW PARTNERS
-            	.requestMatchers(
-            	HttpMethod.GET,
-            	"/api/admin/partners"
-            	).hasAnyRole("SUPER_ADMIN","ADMIN")
-
-            	// UPDATE / VERIFY / APPROVE / DELETE
-            	.requestMatchers(
-            	"/api/admin/partners/**"
-            	).hasAnyRole("SUPER_ADMIN","ADMIN")
-
-
-            	    // ================= ROLE MODULES =================
-            	    .requestMatchers("/api/superadmin/**")
-            	    .hasRole("SUPER_ADMIN")
-
-            	    .requestMatchers("/api/sales/**")
-            	    .hasRole("SALES_MANAGER")
-
-            	    .requestMatchers("/api/marketing/**")
-            	    .hasRole("MARKETING_MANAGER")
-
-            	    .requestMatchers("/api/finance/**")
-            	    .hasRole("FINANCE")
-
-            	    .requestMatchers("/api/support/**")
-            	    .hasRole("SUPPORT")
-
-            	    .requestMatchers("/api/view/**")
-            	    .hasRole("VIEW_ONLY")
-
-            	    // 🔥 KEEP THIS LAST
-            	    .requestMatchers("/api/admin/**")
-            	    .hasAnyRole("SUPER_ADMIN","ADMIN")
-
-            	    .anyRequest().authenticated()
-            	)
-
-
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -211,39 +160,33 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOriginPatterns(List.of(
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "https://*.vercel.app"
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://*.vercel.app"
         ));
 
         config.setAllowedMethods(List.of("*"));
-
         config.setAllowedHeaders(List.of("*"));
-
         config.setExposedHeaders(List.of("Authorization"));
-
         config.setAllowCredentials(true);
-
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
+        new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**", config);
 
         return source;
     }
 
-    // ================= PASSWORD =================
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // ================= AUTH MANAGER =================
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config
+    AuthenticationConfiguration config
     ) throws Exception {
         return config.getAuthenticationManager();
     }
