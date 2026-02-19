@@ -36,60 +36,58 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        if(request.getMethod().equalsIgnoreCase("OPTIONS")){
-            filterChain.doFilter(request,response);
+        // ✅ Allow CORS preflight
+        if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
         String header = request.getHeader("Authorization");
 
-        if(header != null && header.startsWith("Bearer ")) {
+        if (header != null && header.startsWith("Bearer ")) {
 
             String token = header.substring(7);
+
             System.out.println("JWT TOKEN = " + token);
-            System.out.println("JWT SECRET = " + jwtUtil.getSecretDebug());
 
-
-            if(jwtUtil.validateToken(token)) {
+            if (jwtUtil.validateToken(token)) {
 
                 String email = jwtUtil.extractEmail(token);
-                String role = jwtUtil.extractRole(token).replace("ROLE_", "");
+                String role  = jwtUtil.extractRole(token);
 
-
-                // 🔥🔥🔥 REMOVE ROLE_ PREFIX FROM JWT
-                if(role.startsWith("ROLE_")){
+                // 🔥 REMOVE ROLE_ FROM JWT CLAIM
+                if (role != null && role.startsWith("ROLE_")) {
                     role = role.substring(5);
                 }
 
-                if(email != null &&
+                if (email != null &&
                     SecurityContextHolder.getContext().getAuthentication() == null) {
 
                     Admin admin = adminRepository
                             .findByEmail(email)
                             .orElse(null);
 
-                    if(admin != null && admin.isActive()) {
+                    if (admin != null && admin.isActive()) {
 
                         UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(
-                                admin,
-                                null,
-                                List.of(
-                                    // 🔥 ADD BACK ONLY ONE ROLE_
-                                		new SimpleGrantedAuthority("ROLE_" + role)
-
-                                )
-                            );
+                                new UsernamePasswordAuthenticationToken(
+                                        admin,
+                                        null,
+                                        List.of(
+                                                // ✅ ADD BACK SINGLE ROLE_
+                                                new SimpleGrantedAuthority("ROLE_" + role)
+                                        )
+                                );
 
                         SecurityContextHolder
-                            .getContext()
-                            .setAuthentication(auth);
+                                .getContext()
+                                .setAuthentication(auth);
                     }
                 }
             }
         }
 
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 
     @Override
@@ -97,11 +95,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // ❌ DO NOT FILTER LOGIN OR PUBLIC APIs
+        // ❌ Skip login + public endpoints
         return path.startsWith("/api/auth")
             || path.startsWith("/api/voice")
             || path.startsWith("/api/ai")
             || path.startsWith("/api/webhook");
     }
-
 }
