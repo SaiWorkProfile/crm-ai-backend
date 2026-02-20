@@ -124,21 +124,10 @@ public class SecurityConfig {
         .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
         // CLIENTS
-        .requestMatchers(HttpMethod.POST,"/api/admin/clients")
-        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
-
-        .requestMatchers(HttpMethod.GET,"/api/admin/clients")
-        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
-
         .requestMatchers("/api/admin/clients/**")
         .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
         // PARTNERS
-        .requestMatchers(HttpMethod.POST,"/api/admin/partners")
-        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
-
-        .requestMatchers(HttpMethod.GET,"/api/admin/partners")
-        .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
 
         .requestMatchers("/api/admin/partners/**")
         .hasAnyAuthority("ROLE_SUPER_ADMIN","ROLE_ADMIN")
