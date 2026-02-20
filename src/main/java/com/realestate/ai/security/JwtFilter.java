@@ -36,7 +36,6 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // ✅ Allow CORS preflight
         if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
             filterChain.doFilter(request, response);
             return;
@@ -48,12 +47,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
             String token = header.substring(7);
 
-            System.out.println("JWT TOKEN = " + token);
-
             if (jwtUtil.validateToken(token)) {
 
                 String email = jwtUtil.extractEmail(token);
-                String role  = jwtUtil.extractRole(token);
+                String role  = jwtUtil.extractRole(token); // ROLE_ADMIN
+
                 if (email != null &&
                     SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -64,18 +62,15 @@ public class JwtFilter extends OncePerRequestFilter {
                     if (admin != null && admin.isActive()) {
 
                         UsernamePasswordAuthenticationToken auth =
-                                new UsernamePasswordAuthenticationToken(
-                                        admin,
-                                        null,
-                                        List.of(
-                                                // ✅ ADD BACK SINGLE ROLE_
-                                                new SimpleGrantedAuthority(role)
-                                        )
-                                );
+                            new UsernamePasswordAuthenticationToken(
+                                email,
+                                null,
+                                List.of(new SimpleGrantedAuthority(role))
+                            );
 
                         SecurityContextHolder
-                                .getContext()
-                                .setAuthentication(auth);
+                            .getContext()
+                            .setAuthentication(auth);
                     }
                 }
             }
@@ -89,7 +84,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // ❌ Skip login + public endpoints
         return path.startsWith("/api/auth")
             || path.startsWith("/api/voice")
             || path.startsWith("/api/ai")
