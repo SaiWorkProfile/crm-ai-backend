@@ -54,12 +54,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 String email = jwtUtil.extractEmail(token);
                 String role  = jwtUtil.extractRole(token);
-
-                // 🔥 REMOVE ROLE_ FROM JWT CLAIM
-                if (role != null && role.startsWith("ROLE_")) {
-                    role = role.substring(5);
-                }
-
                 if (email != null &&
                     SecurityContextHolder.getContext().getAuthentication() == null) {
 
