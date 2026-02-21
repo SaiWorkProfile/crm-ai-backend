@@ -37,48 +37,42 @@ this.emailService=emailService;
 }
 
 // ================= ONBOARD =================
+//================= ONBOARD =================
 public Partner onboard(Partner p){
 
 System.out.println("🚀 SERVICE HIT: ONBOARD PARTNER");
 
 try {
 
-System.out.println("PartnerType: " + p.getPartnerType());
-System.out.println("Pincode: " + p.getPincode());
-
 if(p.getPartnerType()==PartnerType.LEGACY_PARTNER){
-
-System.out.println("Checking LEGACY constraint...");
 
 repo.findByPincodeAndDeletedFalse(
 p.getPincode())
 .ifPresent(x->{
-
-System.out.println("❌ LEGACY PARTNER EXISTS!");
-
 throw new RuntimeException(
 "Legacy Partner exists for this pincode");
-
 });
 }
 
 Partner saved=repo.save(p);
 System.out.println("✅ PARTNER SAVED ID: "+saved.getId());
 
-// CREATE LOGIN ENTRY
+
+//🔥 CREATE LOGIN ENTRY (INACTIVE)
 ClientUser user = new ClientUser();
 
 user.setName(saved.getName());
 user.setEmail(saved.getEmail());
 user.setPhone(saved.getPhone());
 user.setRole(ClientRole.PARTNER);
-user.setActive(true);
-user.setPassword("TEMP_PASSWORD");
+user.setActive(false);        // ❗EMAIL NOT VERIFIED YET
+user.setPassword(null);
 
 clientRepo.save(user);
-System.out.println("✅ CLIENT LOGIN CREATED");
+System.out.println("✅ PARTNER USER CREATED");
 
-// CREATE TOKEN
+
+//🔥 CREATE ACTIVATION TOKEN
 String token=UUID.randomUUID().toString();
 
 PartnerActivationToken t=
@@ -87,18 +81,19 @@ new PartnerActivationToken();
 t.setToken(token);
 t.setPartnerId(saved.getId());
 t.setExpiry(
-LocalDateTime.now().plusDays(1)
+LocalDateTime.now().plusHours(24)
 );
 
 tokenRepo.save(t);
 System.out.println("✅ TOKEN CREATED");
 
-// EMAIL
+
+//🔥 SEND CORRECT EMAIL LINK
 try {
 
 emailService.sendActivationLink(
 saved.getEmail(),
-"https://crm.app/set-password?token=" + token
+"https://crm-app.vercel.app/partner/set-password?token=" + token
 );
 
 System.out.println("✅ EMAIL SENT");
@@ -120,7 +115,6 @@ System.out.println("🔥 SERVICE ERROR: "+ex.getMessage());
 throw ex;
 }
 }
-
 // ================= APPROVE =================
 public Partner approve(Long id){
 
