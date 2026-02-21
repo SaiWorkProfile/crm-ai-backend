@@ -19,10 +19,9 @@ public class AdminClientController {
         this.clientRepo = clientRepo;
     }
 
-    // ================= CREATE CLIENT =================
+    // ================= CREATE =================
     @PostMapping
-    public ClientUser create(
-            @RequestBody ClientUser user){
+    public ClientUser create(@RequestBody ClientUser user){
 
         user.setRole(ClientRole.CLIENT);
         user.setActive(true);
@@ -30,9 +29,28 @@ public class AdminClientController {
         return clientRepo.save(user);
     }
 
-    // ================= GET ALL CLIENTS =================
+    // ================= GET =================
     @GetMapping
     public List<ClientUser> all(){
         return clientRepo.findAll();
+    }
+
+    // ================= SUSPEND =================
+    @PutMapping("/{id}/suspend")
+    public ClientUser suspend(@PathVariable Long id){
+
+        ClientUser user = clientRepo.findById(id)
+                .orElseThrow();
+
+        user.setActive(false);
+
+        return clientRepo.save(user);
+    }
+
+    // ================= DELETE =================
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id){
+
+        clientRepo.deleteById(id);
     }
 }
