@@ -36,21 +36,35 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        System.out.println("====== JWT FILTER START ======");
+        System.out.println("REQUEST URI: " + request.getRequestURI());
+
         if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            System.out.println("OPTIONS REQUEST - SKIPPING");
             filterChain.doFilter(request, response);
             return;
         }
 
         String header = request.getHeader("Authorization");
 
+        if (header == null) {
+            System.out.println("❌ NO AUTH HEADER FOUND");
+        }
+
         if (header != null && header.startsWith("Bearer ")) {
 
             String token = header.substring(7);
+            System.out.println("TOKEN RECEIVED");
 
             if (jwtUtil.validateToken(token)) {
 
+                System.out.println("✅ JWT VALID");
+
                 String email = jwtUtil.extractEmail(token);
-                String role  = jwtUtil.extractRole(token); // ROLE_ADMIN
+                String role  = jwtUtil.extractRole(token);
+
+                System.out.println("EMAIL FROM TOKEN: " + email);
+                System.out.println("ROLE FROM TOKEN: " + role);
 
                 if (email != null &&
                     SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -58,6 +72,15 @@ public class JwtFilter extends OncePerRequestFilter {
                     Admin admin = adminRepository
                             .findByEmail(email)
                             .orElse(null);
+
+                    System.out.println("ADMIN FROM DB: " + admin);
+
+                    if(admin==null){
+                        System.out.println("❌ ADMIN NOT FOUND IN RENDER DB");
+                    }
+                    else{
+                        System.out.println("ADMIN ACTIVE: "+admin.isActive());
+                    }
 
                     if (admin != null && admin.isActive()) {
 
@@ -71,10 +94,20 @@ public class JwtFilter extends OncePerRequestFilter {
                         SecurityContextHolder
                             .getContext()
                             .setAuthentication(auth);
+
+                        System.out.println("🔥 AUTHENTICATION SET SUCCESS");
+                    }
+                    else{
+                        System.out.println("❌ AUTHENTICATION NOT SET");
                     }
                 }
             }
+            else{
+                System.out.println("❌ JWT INVALID");
+            }
         }
+
+        System.out.println("====== JWT FILTER END ======");
 
         filterChain.doFilter(request, response);
     }
