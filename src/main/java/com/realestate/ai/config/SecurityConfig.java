@@ -48,6 +48,9 @@ public class SecurityConfig {
         // PUBLIC
         .requestMatchers("/api/auth/**").permitAll()
         .requestMatchers("/api/client/login").permitAll()
+     // PARTNER APIs
+        .requestMatchers("/api/partner/**")
+        .hasAuthority("ROLE_PARTNER")
         .requestMatchers("/api/auth/client/set-password").permitAll()
         .requestMatchers("/api/voice/**").permitAll()
         .requestMatchers("/api/ai/**").permitAll()
