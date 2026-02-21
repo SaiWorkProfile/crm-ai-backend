@@ -45,34 +45,33 @@ public class EmailService {
 
 
     // ================= PARTNER ACTIVATION =================
-    public void sendActivationLink(String to, String link) {
+    
+    public void sendActivationLink(String to, String link){
 
         System.out.println("📧 ACTIVATION EMAIL TO: " + to);
 
         try {
 
             SimpleMailMessage msg = new SimpleMailMessage();
-
             msg.setTo(to);
-            msg.setFrom("saiwweram@gmail.com"); // ⚠️ IMPORTANT
+            msg.setFrom("saiwweram@gmail.com");
             msg.setSubject("Activate Your Manortha Partner Account");
 
             msg.setText(
-                "Welcome to Manortha CRM\n\n" +
+                "Welcome Partner,\n\n" +
                 "Click below link to set your password:\n\n" +
                 link +
-                "\n\nThis link expires in 24 hours.\n\n" +
-                "If you did not request this, ignore this email."
+                "\n\nValid for 24 hours."
             );
 
             mailSender.send(msg);
 
-            System.out.println("✅ ACTIVATION EMAIL SENT");
+            System.out.println("✅ ACTIVATION EMAIL SENT SUCCESSFULLY");
 
         } catch (Exception e) {
 
-            System.out.println("❌ ACTIVATION EMAIL FAILED");
-            e.printStackTrace();
+            System.out.println("❌ EMAIL FAILED:");
+            e.printStackTrace();   // 🔥 THIS WILL SHOW REAL SMTP ERROR
         }
     }
 }
