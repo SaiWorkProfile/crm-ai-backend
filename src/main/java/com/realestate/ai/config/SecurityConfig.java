@@ -51,6 +51,10 @@ public class SecurityConfig {
         .requestMatchers("/api/auth/**").permitAll()
         .requestMatchers("/api/client/login").permitAll()
      // PARTNER APIs
+     // 🔓 PARTNER LOGIN PUBLIC
+        .requestMatchers("/api/partner/login").permitAll()
+
+        // 🔒 OTHER PARTNER APIS PROTECTED
         .requestMatchers("/api/partner/**")
         .hasAuthority("ROLE_PARTNER")
         .requestMatchers("/api/auth/client/set-password").permitAll()
