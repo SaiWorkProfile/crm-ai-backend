@@ -1,77 +1,82 @@
 package com.realestate.ai.service;
 
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.resend.Resend;
+import com.resend.services.emails.Emails;
+import com.resend.services.emails.model.CreateEmailOptions;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final Resend resend;
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public EmailService(
+            @Value("${resend.api.key}") String apiKey
+    ){
+        this.resend = new Resend(apiKey);
     }
 
-    // ================= OTP MAIL =================
-    public void sendOtp(String to, String otp) {
+    // ================= OTP =================
+    public void sendOtp(String to,String otp){
 
-        System.out.println("📧 OTP EMAIL TO: " + to);
+        try{
 
-        try {
+            Emails emails = resend.emails();
 
-            SimpleMailMessage msg = new SimpleMailMessage();
+            CreateEmailOptions params =
+                    CreateEmailOptions.builder()
+                            .from("Manortha CRM <onboarding@resend.dev>")
+                            .to(to)
+                            .subject("Manortha OTP Verification")
+                            .html(
+                                    "<h3>Your OTP is: "+otp+"</h3>"+
+                                    "<p>Valid for 5 minutes</p>"
+                            )
+                            .build();
 
-            msg.setTo(to);
-            msg.setFrom("saiwweram@gmail.com"); // ⚠️ ONLY EMAIL (NO NAME)
-            msg.setSubject("Manortha CRM Password Reset OTP");
-
-            msg.setText(
-                "Your OTP is: " + otp +
-                "\n\nValid for 5 minutes." +
-                "\n\nIgnore if not requested."
-            );
-
-            mailSender.send(msg);
+            emails.send(params);
 
             System.out.println("✅ OTP EMAIL SENT");
 
-        } catch (Exception e) {
+        }catch(Exception e){
 
             System.out.println("❌ OTP EMAIL FAILED");
             e.printStackTrace();
         }
     }
 
-
     // ================= PARTNER ACTIVATION =================
-    
-    public void sendActivationLink(String to, String link){
+    public void sendActivationLink(
+            String to,
+            String link
+    ){
 
-        System.out.println("📧 ACTIVATION EMAIL TO: " + to);
+        try{
 
-        try {
+            Emails emails = resend.emails();
 
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(to);
-            msg.setFrom("saiwweram@gmail.com");
-            msg.setSubject("Activate Your Manortha Partner Account");
+            CreateEmailOptions params =
+                    CreateEmailOptions.builder()
+                            .from("Manortha CRM <onboarding@resend.dev>")
+                            .to(to)
+                            .subject("Activate Partner Account")
+                            .html(
+                                    "<h2>Welcome Partner</h2>"+
+                                    "<p>Click below to set password</p>"+
+                                    "<a href='"+link+"'>Activate Account</a>"
+                            )
+                            .build();
 
-            msg.setText(
-                "Welcome Partner,\n\n" +
-                "Click below link to set your password:\n\n" +
-                link +
-                "\n\nValid for 24 hours."
-            );
+            emails.send(params);
 
-            mailSender.send(msg);
+            System.out.println("✅ ACTIVATION EMAIL SENT");
 
-            System.out.println("✅ ACTIVATION EMAIL SENT SUCCESSFULLY");
+        }catch(Exception e){
 
-        } catch (Exception e) {
-
-            System.out.println("❌ EMAIL FAILED:");
-            e.printStackTrace();   // 🔥 THIS WILL SHOW REAL SMTP ERROR
+            System.out.println("❌ ACTIVATION EMAIL FAILED");
+            e.printStackTrace();
         }
     }
 }

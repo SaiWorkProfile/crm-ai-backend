@@ -41,7 +41,9 @@ public class SecurityConfig {
         )
 
         .authorizeHttpRequests(auth -> auth
-
+        		
+        		// ✅ VERY VERY IMPORTANT
+        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
         // PREFLIGHT
         .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 
