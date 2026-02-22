@@ -81,7 +81,7 @@ public class JwtFilter extends OncePerRequestFilter {
                     else if(role.equals("ROLE_PARTNER")
                     || role.equals("ROLE_CLIENT")){
 
-                        clientRepo.findByEmail(email)
+                        clientRepo.findFirstByEmail(email)
                         .ifPresent(user -> {
 
                             UsernamePasswordAuthenticationToken auth =
