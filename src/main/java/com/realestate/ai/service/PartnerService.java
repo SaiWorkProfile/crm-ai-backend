@@ -93,7 +93,7 @@ try {
 
 emailService.sendActivationLink(
 saved.getEmail(),
-"https://crm-app.vercel.app/partner/set-password?token=" + token
+"https://manortha-website.vercel.app/partner/set-password?token=" + token
 );
 
 System.out.println("✅ EMAIL SENT");
