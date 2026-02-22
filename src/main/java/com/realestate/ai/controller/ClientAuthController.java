@@ -36,7 +36,7 @@ public class ClientAuthController {
         String password = body.get("password");
 
         ClientUser user =
-                clientRepo.findByEmail(email)
+                clientRepo.findFirstByEmail(email)
                         .orElseThrow(() ->
                                 new RuntimeException("User Not Found"));
 

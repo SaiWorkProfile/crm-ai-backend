@@ -18,4 +18,5 @@ findByEmail(String email);
 
 List<Partner>
 findByDeletedFalse();
+boolean existsByEmailAndDeletedFalse(String email);
 }

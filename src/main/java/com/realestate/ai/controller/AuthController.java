@@ -140,7 +140,7 @@ public class AuthController {
                                 new RuntimeException("Partner Not Found"));
 
         ClientUser user =
-                clientRepo.findByEmail(partner.getEmail())
+        		clientRepo.findFirstByEmail(partner.getEmail())
                         .orElseThrow(() ->
                                 new RuntimeException("User Not Found"));
 

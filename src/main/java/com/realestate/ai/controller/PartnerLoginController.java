@@ -43,7 +43,7 @@ String email = body.get("email");
 String password = body.get("password");
 
 ClientUser user =
-clientRepo.findByEmail(email)
+clientRepo.findFirstByEmail(email)
 .orElseThrow(() ->
 new RuntimeException("Partner Not Found"));
 

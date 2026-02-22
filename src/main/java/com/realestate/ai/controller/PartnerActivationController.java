@@ -59,7 +59,7 @@ partnerRepo.findById(t.getPartnerId())
 .orElseThrow();
 
 ClientUser user =
-clientRepo.findByEmail(partner.getEmail())
+clientRepo.findFirstByEmail(partner.getEmail())
 .orElseThrow();
 
 user.setPassword(encoder.encode(password));
